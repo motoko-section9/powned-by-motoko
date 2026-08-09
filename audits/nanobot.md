@@ -46,6 +46,16 @@ workflows en background, endurecimiento WhatsApp.
 - 4 TODO(v0.3.1) puntuales, todos marcados como legacy-cleanup.
 - CI sólido: 3 matrices de Python, lint ruff, WebUI (lint+test+build), Docker.
 
+## Bug de texto WhatsApp: ✅ RESUELTO (commit 53d2bdc2)
+
+Verificado post-fix: `runtime.py:835` ahora construye
+`Message(extendedTextMessage=ExtendedTextMessage(text=content))` en lugar de
+dejar que neonize use `Message(conversation=...)`. La suite de tests del canal
+WhatsApp pasa completa (58/58). Causa raíz original documentada abajo para
+referencia.
+
+---
+
 ## Hallazgo crítico: bug de texto WhatsApp (causa raíz corregida)
 
 > Nota de auditoría: la primera hipótesis (parseo de menciones en vivo en
