@@ -38,7 +38,7 @@ powned-by-motoko/
 | Repo | Puntaje | Badge |
 |------|---------|-------|
 | [jpyunism/ollama-usage](https://github.com/jpyunism/ollama-usage) | 10/10 | [ver](badges/ollama-usage-10.webp) |
-| [madkoding/nanobot](https://github.com/madkoding/nanobot) | 8.6/10 | [ver](badges/nanobot-8.6.webp) |
+| [madkoding/nanobot](https://github.com/madkoding/nanobot) | 9.0/10 | [ver](badges/nanobot-9.0.webp) |
 
 ## Formato del badge
 
