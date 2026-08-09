@@ -46,23 +46,34 @@ workflows en background, endurecimiento WhatsApp.
 - 4 TODO(v0.3.1) puntuales, todos marcados como legacy-cleanup.
 - CI sólido: 3 matrices de Python, lint ruff, WebUI (lint+test+build), Docker.
 
-## Hallazgo crítico: bug de texto WhatsApp
+## Hallazgo crítico: bug de texto WhatsApp (causa raíz corregida)
 
-- `runtime.py:805 send()` → texto usa `client.send_message(to, content)`,
-  media usa `send_image/send_audio/send_video/send_document`.
-- `_resolve_send_target` (L941) traduce LID→phone, pero los grupos `@g.us`
-  no se tocan → el target no es el problema.
-- **Causa raíz probable:** neonize `send_message` corre `_parse_group_mention`
-  en cada texto (L~570 de neonize), que hace `get_group_info()` en vivo. Bajo
-  la reconexión "live but silent", esa llamada falla y el envío de texto se
-  pierde silenciosamente, mientras media (que no parsea menciones) sí sale.
-- **Agravante:** `send()` hace `_record_send_success()` en el `else` si
-  `send_message` no lanza. Si el texto se descarta en silencio (sin excepción),
-  se cuenta como éxito → no hay log de error.
+> Nota de auditoría: la primera hipótesis (parseo de menciones en vivo en
+> `send_message`) fue **desmentida** al verificar el source de neonize:
+> `send_audio`/`send_image`/`send_video`/`send_document` **todas llaman
+> internamente a `send_message`**. Si ese path fallara, la media también
+> fallaría — y no falla. La diferencia real está en el TIPO de argumento.
 
-**Fix recomendado:** envolver el texto en `Message(conversation=content)`
-directo (evitando el parseo de menciones) o pasar `Message` ya construido;
-y validar el `SendResponse` del envío en vez de asumir éxito por no-excepción.
+- `runtime.py:805 send()` → texto pasa un `str` a `client.send_message()`.
+- neonize, ante un `str` sin menciones de grupo, genera
+  `Message(conversation=texto)` (campo `conversation`).
+- La media pasa un `Message` proto ya armado (`audioMessage`/`imageMessage`/
+  `videoMessage`/`documentMessage`), que **no** usa el campo `conversation`.
+- **Causa raíz:** el campo `conversation` en **mensajes de grupo** es
+  descartado en silencio por servidores WhatsApp recientes. Los mensajes con
+  campos tipados (`audioMessage`, etc.) se entregan de forma fiable. Por eso
+  los audios del bot llegan pero los textos planos no.
+- **Agravante:** `send()` marca `_record_send_success()` si `send_message` no
+  lanza excepción. El descarte silencioso del `conversation` no lanza → se
+  cuenta como éxito y no hay log de error.
+
+**Fix recomendado:** para mensajes de texto a grupos, forzar el envío como
+`Message(extendedTextMessage=ExtendedTextMessage(text=...))` (campo tipado) en
+lugar de dejar que neonize use `conversation`. Eso se logra pasando un `Message`
+proto ya construido a `send_message` (mismo path que la media, que sí funciona),
+o marcando `ghost_mentions`/`mentions_are_lids` para forzar el branch
+`extendedTextMessage`. Además, validar el `SendResponse` en vez de asumir éxito
+por no-excepción.
 
 ## Veredicto
 
