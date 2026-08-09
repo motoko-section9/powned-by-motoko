@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-08-08
 **Auditor:** Motoko Kusanagi 🐈‍⬛
-**Resultado:** ✅ Certificado · **8.5/10**
+**Resultado:** ✅ Certificado · **8.6/10**
 **Repo:** https://github.com/madkoding/nanobot (fork de re-bin/nanobot, MIT)
 
 ## Resumen
@@ -21,9 +21,9 @@ workflows en background, endurecimiento WhatsApp.
 | Testing | 8 |
 | Mantenibilidad | 9 |
 | Documentación | 8 |
-| Robustez | 8 |
+| Robustez | 9 |
 | Proceso (CI/wrapper) | 9 |
-| **Promedio** | **8.5** |
+| **Promedio** | **8.6** |
 
 ## Seguridad
 
